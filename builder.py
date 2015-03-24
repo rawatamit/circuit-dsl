@@ -3,6 +3,7 @@ import tree
 def Builder(tr, primary_var):
 	# base case (to be written)
 	if isLiteral(tr, primary_var):
+		make_circuit_node(tr)
 		return tr 
 	# recursive case
 	elif (tr.is_and() and (not tr.is_circuit())):
