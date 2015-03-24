@@ -3,7 +3,9 @@ import wire
 def Builder(tr, primary_var):
 	# base case (to be written)
         if isLiteral(tr, primary_var):
-		return tr
+                out = wire.wire()
+		out = tr
+		return out
 	# recursive case
 	elif (tr.is_and() and (not tr.is_circuit())):
 #		temp_out = chr(ord(temp_out)+1) #the temporary output variable 
