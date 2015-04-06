@@ -34,13 +34,13 @@ def half_adder_test(the_agenda):
 
 def test_function(the_agenda):
     import qm, builder
-    minterms = [4,8,9,10,11,12,14,15]
-    variables = ['A','B','C','D']
+    minterms = [1,5,6,7]
+    variables = ['A','B','C']
     numvars = len(variables)
-    minterms = [(minterm, qm.to_list(minterm, numvars)) for minterm in minterms]
-    primes = qm.essential_primes(minterms, variables)
-    wires, circuit = builder.make_circuit(primes, variables, the_agenda)
-    wires['B'].set_signal(1)
+    wires, circuit = utils.make_minterm_circuit(the_agenda, variables, minterms, dc=[])
+    wires['A'].set_signal(1)
+    wires['B'].set_signal(0)
+    wires['C'].set_signal(1)
     utils.probe('ckt', circuit, the_agenda)
     utils.propagate(the_agenda)
 
