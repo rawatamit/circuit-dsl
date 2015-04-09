@@ -1,7 +1,6 @@
 ## DOUBT:: how to represent the functions being passed to f,g,h
 ## f,g,h are ite-operators themselves
 
-
 ## minterms are represented as a list
 ## '0' represents bit 0
 ## '1' represents bit 1
@@ -13,7 +12,7 @@ bit_zero = 0
 bit_both = -1
 var_not_there = '-' # to indicate that a variable is not there in the minterm
 tautology = [[]]
-
+fallacy = [[]]
 
 def to_list(minterm, numvars):
     mask, l = 1 << (numvars - 1), []
@@ -37,7 +36,7 @@ def ITE(f,g,h):
 
 ## base case for recursion
     if f is tautology : return g #tautology is the function '1'
-    if f is falacy : return h   #falacy is the function '0'
+    if f is fallacy : return h   #falacy is the function '0'
     if g == h : return g 
 
   #  if (Lookup_Computed_Table([f,g,h]) : #correct the syntax
@@ -71,7 +70,7 @@ def cofactor(boolean_func, split_var, value, var_order):
     index_split_var_var_order = list(var_order.keys())[list(var_order.values()).index(split_var)]   
     index_split_var_var_order =  index_split_var_var_order - 1
     #for i in range(0,len(boolean_func)): # the i implicant/minterm
-    i= 0
+    i = 0
     while i < len(result) :
         if (result[i][index_split_var_var_order] == 1 and  value is True ) or ( result[i][index_split_var_var_order] == 0 and  value is False ) :
            result[i][index_split_var_var_order] =  var_not_there	# put '-' for variable that has been forced to 1.
@@ -92,7 +91,7 @@ def main():
     variables = ['A','B','C']
     for var in variables:
         var_order.update({i:var}) # top variable in the variable order
-    				  # has index 0 
+    				  # has index 1 
         i += 1
 
     numvars = len(variables)

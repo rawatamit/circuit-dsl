@@ -58,6 +58,7 @@ def top_variable(f,g,h,var_order): #f,g,h are of the form [[1,0,-,0],[1,0,1,1]..
 # Caution:: the order of specifying low child and high child is opposite in the two. Be careful !!
 
 def ITE(bdd,f,g,h,var_order): 
+<<<<<<< HEAD
 
 
     #base case(incorrect termination condition)
@@ -73,11 +74,19 @@ def ITE(bdd,f,g,h,var_order):
           return ITE_mk(bdd,v,g,g,var_order) 
     if bdd['tautology'] in g:
           return ITE_mk(bdd,v,f,f,var_order) 
+=======
+    #base case
+    #if bdd['tautology'] in f  : return g # checking for a tautology. It  is the function '1'
+    #if f == bdd['fallacy'] : return h   #fallacy is the function '0'
+    #if g == h:
+    	#return g 
+    
+>>>>>>> f10280778334bb445fa2a4c1b8ffee37c6761b8b
     # pseudo code for base condition
-    #
-    # if(terminal condition is reached) : 
-    #    return ITE_mk (bdd, v, <list corresponding to low_child function>, <list corresponding to low_child function> )
-    #
+    if bdd['tautology'] in f:
+    	return ITE_mk(bdd, v, g, bdd['fallacy'])
+    if f == bdd['fallacy']:
+    	return ITE_mk(bdd, v, bdd['fallacy'], h)
     
     print ("ITE top variable =",v)
     f1 = deepcopy(f)
@@ -97,13 +106,13 @@ def ITE(bdd,f,g,h,var_order):
     f_v_ =  cofactor(f1, v, False, var_order) # splitting 'f' on the top variable 'v'
     g_v_ =  cofactor(g, v, False, var_order) 
     h_v_ =  cofactor(h, v, False, var_order) 
-     
+    
     T = ITE(bdd,f_v,g_v,h_v,var_order) # f_v, g_v, h_v are the positive cofactors of f,g,h 
 			   # w.r.t. variable 'v' . T is the high child 
     E = ITE(bdd,f_v_,g_v_,h_v_,var_order) # f_v_, g_v_, h_v_ are the negative cofactors of f,g,h w.r.t 'v'. E is the low child
     
     if T == E : return T  # reduction: captures the notion of merging identical nodes
-  
+    
     # Find the entry or create a new entry  in the Unique_Table with variable 'v' and children T and E
     r = ITE_mk(bdd,v,E,T,var_order) # 'r' is the 'unique id' which is assigned to each row of the Unique Table
     return r  
