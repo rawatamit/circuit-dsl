@@ -32,12 +32,26 @@ def half_adder_test(the_agenda):
     in2.set_signal(1)
     utils.propagate(the_agenda)
 
-def test_function(the_agenda):
+def test_minterm_function(the_agenda):
     import qm, builder
-    minterms = [1,5,6,7]
+    minterms = [1,4,5,6,7]
     variables = ['A','B','C']
     numvars = len(variables)
     wires, circuit = utils.make_minterm_circuit(the_agenda, variables, minterms, dc=[])
+    print(wires, circuit)
+    wires['A'].set_signal(1)
+    wires['B'].set_signal(0)
+    wires['C'].set_signal(1)
+    utils.probe('ckt', circuit, the_agenda)
+    utils.propagate(the_agenda)
+
+def test_maxterm_function(the_agenda):
+    import qm, builder
+    maxterms = [0,2,3]
+    variables = ['A','B','C']
+    numvars = len(variables)
+    wires, circuit = utils.make_maxterm_circuit(the_agenda, variables, maxterms, dc=[])
+    print(wires, circuit)
     wires['A'].set_signal(1)
     wires['B'].set_signal(0)
     wires['C'].set_signal(1)
@@ -47,7 +61,7 @@ def test_function(the_agenda):
 # entry into the simulator
 def main():
     the_agenda = agenda.agenda()
-    test_function(the_agenda)
+    test_maxterm_function(the_agenda)
 
 if __name__ == '__main__':
     main()

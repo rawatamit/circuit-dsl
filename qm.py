@@ -125,8 +125,8 @@ def essential_primes(minterms, variables):
                                    [mterm for _, mterm in minterms])
 
 def main():
-    minterms = [4,8,9,10,11,12,14,15]
-    variables = ['A','B','C','D']
+    minterms = [(x, to_list(x, 3)) for x in [1,4,5,6,7]]
+    variables = ['A','B','C']
     #find_smallest_set_cover([1,2,3,4], [['1','0']], ['A','B'])
     print(essential_primes(minterms, variables))
 

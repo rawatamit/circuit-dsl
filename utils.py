@@ -28,8 +28,7 @@ def make_minterm_circuit(the_agenda, variables, minterms=[], dc=[]):
 
 # create a circuit with the given maxterms and don't care values
 def make_maxterm_circuit(the_agenda, variables, maxterms=[], dc=[]):
-    terms = set(range(1, (2 ** len(variables)) - 1))
+    terms = set(range(0, (2 ** len(variables))))
     function = maxterms + dc # use don't care terms
-    minterms = [function[i] for i in range(len(function)) if not function[i] in terms]
-    return make_minterm_circuit(the_agenda, variables, minterms, [])
-
+    minterms = terms - set(function) # take difference between the two sets
+    return make_minterm_circuit(the_agenda, variables, list(minterms), [])
