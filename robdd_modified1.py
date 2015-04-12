@@ -1,6 +1,3 @@
-## DOUBT:: What should be the termination condition and how to specify it..... 
-
-# NOTE: make changes in the structure of the Unique Table and Computed Table :: DONE
 
 ## minterms are represented as a list
 ## '0' represents bit 0
@@ -177,9 +174,9 @@ def cofactor(boolean_func, split_var, value, var_order):
         if result[i] == []: 
               i += 1 #this is done to skip the [], which is representative of a minterm which is not there in the SoP statement
               continue # continue transfers the control to the beginning if the while loop.
-        if (result[i][index_split_var_var_order] == 1 and  value is True ) or ( result[i][index_split_var_var_order] == 0 and  value is False ) :
+        if (result[i][index_split_var_var_order] == bit_one and  value is True ) or ( result[i][index_split_var_var_order] == bit_zero and  value is False ) :
            result[i][index_split_var_var_order] =  var_not_there	# put '-' for variable that has been forced to 1.
-        elif (result[i][index_split_var_var_order] == 0 and  value is True)  or ( result[i][index_split_var_var_order] == 1 and  value is False ) : 
+        elif (result[i][index_split_var_var_order] == bit_zero and  value is True)  or ( result[i][index_split_var_var_order] == bit_one and  value is False ) : 
            result[i] = [] #represent minterms, that are zero, with [].
         i += 1
     return (result)
