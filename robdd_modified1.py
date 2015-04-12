@@ -1,4 +1,3 @@
-
 ## minterms are represented as a list
 ## '0' represents bit 0
 ## '1' represents bit 1
