@@ -14,10 +14,10 @@ bit_one = 1
 bit_zero = 0
 bit_both = -1
 var_not_there = '-' # to indicate that a variable is not there in the minterm
-#tautology = [['-','-','-','-'],['-','1','0','1'],[]] # a minterm with all elements as '-' represents the function 1. Absence of a variable in a minterm suggests that the particular variable is set to 1. So a SoP with one minterm which evaluates to 1 makes the entire function as 1. Thus, it will have atleast one minterm of the form [-,-]
+index_zero = 0
+no_child = sys.maxsize
 #NOTE: tautology is defined in the function main() in accordance with the number of variables in expression
 
-#fallacy = [] # a minterm which is an empty list represents a minterm that evaluates to zero. So a fallacy is a SoP with all minterms as zero. Hence, it will be of the form [[],[],[]...[]]
 #NOTE: fallacy is defined in the function main() 
 
 
@@ -40,18 +40,19 @@ def top_variable(f,g,h,var_order): #f,g,h are of the form [[1,0,-,0],[1,0,1,1]..
 	top_var_pos = sys.maxsize # this gives the max integer value in Python. Used only for initialization
 	for minterm in f :
 		for i in minterm:
-			if i==1 or i==0:
-				top_var_pos =  minterm.index(i)
+			if i==bit_one or i==bit_zero:
+				top_var_pos =  min(minterm.index(i),top_var_pos)
 	for minterm in g :
 		for i in minterm:
-			if i==1 or i==0:
+			if i==bit_one or i==bit_zero:
 				top_var_pos =  min(minterm.index(i), top_var_pos) 
 	for minterm in h :
 		for i in minterm:
-			if i==1 or i==0:
+			if i==bit_one or i==bit_zero:
 				top_var_pos = min(minterm.index(i), top_var_pos)  
-				top_var = var_order[top_var_pos+1]
-				return (top_var)
+
+	top_var = var_order[top_var_pos+1]
+	return (top_var)
 
 # ITE-operator - CONVENSION: ite(I,T,E) T is high child and E is low child
 # Entry in Unique_Table - < uid, index, low_child_id, high_child_id > . 
@@ -65,24 +66,32 @@ def ITE(bdd,f,g,h,var_order):
     #if f == bdd["fallacy"] : return h   #fallacy is the function '0'
     #if g == h : return g 
     v = top_variable(f,g,h,var_order) # finding the top_variable for the set of functions {f,g,h}
+
     if bdd['tautology'] in f:
-          return ITE_mk(bdd,v,g,bdd["fallacy"],var_order)
+          r = ITE_mk(bdd,v,g,bdd["fallacy"],var_order)
+          return r
     if f == bdd["fallacy"] :
-          return ITE_mk(bdd,v,g,h,var_order) 
-    if g == h :
-          return ITE_mk(bdd,v,g,g,var_order) 
+          r = ITE_mk(bdd,v,g,h,var_order) 
+          return r
+    if g == h : # and f is a primary variable
+          r = ITE_mk(bdd,v,g,g,var_order) 
+          return r
     if bdd['tautology'] in g:
-          return ITE_mk(bdd,v,f,f,var_order) 
+          r = ITE_mk(bdd,v,f,bdd["fallacy"],var_order) 
+          return r
+    
+
     # pseudo code for base condition
     #
     # if(terminal condition is reached) : 
     #    return ITE_mk (bdd, v, <list corresponding to low_child function>, <list corresponding to low_child function> )
     #
     
-    print ("ITE top variable =",v)
+   # print ("ITE top variable =",v)
     f1 = deepcopy(f)
     g1 = deepcopy(g)
     h1 = deepcopy(h)
+  #positive cofactor of f,g,h w.r.t. v
     f_v =  cofactor(f1, v, True, var_order) # splitting 'f' on the top variable 'v'
     g_v =  cofactor(g1, v, True, var_order) 
     h_v =  cofactor(h1, v, True, var_order) 
@@ -91,12 +100,13 @@ def ITE(bdd,f,g,h,var_order):
  #do deepcopy of f before passing it to the function
         
     f1 = deepcopy(f)
-    g1 =  deepcopy(g)
+    g1 = deepcopy(g)
     h1 = deepcopy(h)
 
+# negative cofactor of f,g,h w.r.t. v
     f_v_ =  cofactor(f1, v, False, var_order) # splitting 'f' on the top variable 'v'
-    g_v_ =  cofactor(g, v, False, var_order) 
-    h_v_ =  cofactor(h, v, False, var_order) 
+    g_v_ =  cofactor(g1, v, False, var_order) 
+    h_v_ =  cofactor(h1, v, False, var_order) 
      
     T = ITE(bdd,f_v,g_v,h_v,var_order) # f_v, g_v, h_v are the positive cofactors of f,g,h 
 			   # w.r.t. variable 'v' . T is the high child 
@@ -106,20 +116,20 @@ def ITE(bdd,f,g,h,var_order):
   
     # Find the entry or create a new entry  in the Unique_Table with variable 'v' and children T and E
     r = ITE_mk(bdd,v,E,T,var_order) # 'r' is the 'unique id' which is assigned to each row of the Unique Table
+#    print (r)
     return r  
    
 ### structure of Unique_Table is <id:(index,low_child,high_child)>
 # index is associated with a level of the tree. All nodes at the same level have the same index. The leaf nodes have the highest index. The index keeps decreasing as we go to the root. The index of root node is 1. 
 
 def bdd_initialize(var_order, tautology, fallacy): # initializing the bdd for some pre fixed variable order
-    Unique_Table = {0 : ((len(var_order)+1), None, None) , 1 : ((len(var_order)+1), None, None)}
+    Unique_Table = {0 : ((len(var_order)+1),no_child,no_child) , 1 : ((len(var_order)+1), no_child,no_child)}
 
     bdd = {"u"              : 1             ,
-            "n"              : len(var_order),
-            "Computed_Table" : {}            ,
-            "Unique_Table"   : Unique_Table ,
-            "tautology"      : tautology,
-             "fallacy"       : fallacy  }
+           # "Computed_Table" : {}            ,
+            'Unique_Table'   : Unique_Table ,
+            'tautology'      : tautology,
+             'fallacy'       : fallacy  }
 #    print ("Unique Table: ", Unique_Table,"\n") 
     return bdd
 # here "u" means unique id given to row
@@ -129,14 +139,16 @@ def ITE_mk(bdd,v_top,t,e,var_order):
     i = list(var_order.keys())[list(var_order.values()).index(v_top)] #index of the top-variable
 
  #checking if a particular entry is already there, by checking in the Computed Table
-#    if (i,t,e) in bdd["Computed_Table"]: return bdd["Computed_Table"][(i,t,e)]
- 
+ #   if (i,t,e) in bdd["Computed_Table"]: return bdd["Computed_Table"][(i,t,e)]
+   
  # Creating a new entry in the unique_table and the computed_table
     
     u = bdd["u"] + 1  # generating a new unique id for the new entry in the bdd  
 #    bdd["Computed_Table"][(i,t,e)] = u
     try:
-       value = bdd["Unique_Table"][u]
+       value = bdd["Unique_Table"][u] 
+       print ("\nvalue_bdd:",value,"\n")
+       return (value)
     except KeyError:
     # Key is not present
        bdd["Unique_Table"][u] = (i,t,e)
@@ -168,20 +180,17 @@ def cofactor(boolean_func, split_var, value, var_order):
         if (result[i][index_split_var_var_order] == 1 and  value is True ) or ( result[i][index_split_var_var_order] == 0 and  value is False ) :
            result[i][index_split_var_var_order] =  var_not_there	# put '-' for variable that has been forced to 1.
         elif (result[i][index_split_var_var_order] == 0 and  value is True)  or ( result[i][index_split_var_var_order] == 1 and  value is False ) : 
-           result[i] = [] #remove the minterms that amount to 0 and represent such minterms with [] because the split_var is forced to 0.
-           #i = i -1 # to cause the value of i to remain unchanged at the end of the loop because after removal of certain elements of the list the index of the remaining elemets will decrease
+           result[i] = [] #represent minterms, that are zero, with [].
         i += 1
-         #  result = boolean_func
-         #  result.remove(result[i])
     return (result)
 
 
 def main():
-    minterms = [15,3,7]
+    minterms = [2,3]
     main_boolean_func = [] # the original Boolean expression to be modified
     var_order = {} # stores the mapping <index for variable : variable>. index will determine the prefixed order. the index will also give the position of the variable in a minterm
     i = 1
-    variables = ['A','B','C','D'] # these are the primary variables and are expected to to entered in accordence with the variable order. eg. ['B','C','A','D'] would imply that the variable order is B,C,A,D with B being the
+    variables = ['A','B','C'] # these are the primary variables and are expected to to entered in accordence with the variable order. eg. ['B','C','A','D'] would imply that the variable order is B,C,A,D with B being the
                                   # top variable
     for var in variables:
         var_order.update({i:var}) # top variable in the variable order
@@ -203,28 +212,38 @@ def main():
 # defining the minterm which represents the function ZERO  for the given expression (SoP)
     fallacy = [[] for x in minterms]  
 
-    print ("Original boolean expression: ", main_boolean_func)
-    print ("variable order :",var_order) 
+# get primary variable for the original function
+    top_var = top_variable(main_boolean_func,fallacy,fallacy,var_order) 
+
+# generate the top variable as list from original function
+    top_var_transformed = [[] for i in range(0,len(minterms))]
+    top_var_transformed[index_zero] = ['-' for literal in variables]
+    top_var_transformed[index_zero][variables.index(top_var)] = bit_one
+    #print(top_var_transformed) 
+
+#########################################################################################################
+   # print ("Original boolean expression: ", main_boolean_func)
+   # print ("variable order :",var_order) 
 #creating a copy of main_boolean_func before it is passed as argument at any place
     boolean_copy = []
     boolean_copy = deepcopy(main_boolean_func) #deepcopy causes the change in boolean_copy to not affect main_boolean_func. So the original function is intact in main_boolean_func.
 
-    pos_cofactor = cofactor(boolean_copy, 'A', True, var_order) # splitting on 'A'
+    pos_cofactor = cofactor(boolean_copy, top_var, True, var_order) # splitting on 'A'
 
     boolean_copy = deepcopy(main_boolean_func)
 
-    neg_cofactor = cofactor(boolean_copy, 'A', False, var_order)
+    neg_cofactor = cofactor(boolean_copy, top_var, False, var_order)
     
-    print ("Positive cofactor :",pos_cofactor)
-    print ("Negative cofactor :",neg_cofactor)
+   # print ("Positive cofactor :",pos_cofactor)
+   # print ("Negative cofactor :",neg_cofactor)
 
    
 ## intializing bdd
     bdd = bdd_initialize(var_order, tautology, fallacy)
 
 #invoking ITE operator on the original function
-    ite_result = ITE(bdd,[[1,'-','-','-'],[],[]],pos_cofactor,neg_cofactor,var_order)
-    print (ite_result)
+    ite_result = ITE(bdd,top_var_transformed,pos_cofactor,neg_cofactor,var_order)
+   # print (ite_result)
     print(bdd) 
 
 if __name__ == '__main__':
